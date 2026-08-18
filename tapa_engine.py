@@ -4,24 +4,14 @@ from collections import Counter
 
 class tapa_field:
 
-    def __init__(self, field: str, solution: str = None):
-
-        self.field = []
-        for line in field.split("\n")[:-1]:
-            row = []
-            for nums in line.split(","):
-                row.append([int(num) for num in nums])
-            self.field.append(row)
+    def __init__(self,
+                 field: list[list[int]],
+                 solution: list[list[bool]] = None
+                 ):
+        self.field = field
         self.n_rows = len(self.field)
         self.n_cols = len(self.field[0])
-
-        if solution is None:
-            self.solution = None
-        else:
-            self.solution = np.empty((self.n_rows, self.n_cols), dtype=np.bool)
-            for i, row in enumerate(solution.split("\n")[:-1]):
-                for j, char in enumerate(row):
-                    self.solution[i, j] = (char == '1')
+        self.solution = solution
 
     def __str__(self):
         field_str = "+"+"--+"*(self.n_cols)+"\n"
@@ -90,7 +80,6 @@ class tapa_field:
             print("Number cell has wrong neighborhood")
             all_pass = False
         return all_pass
-
 
     def check_number_cell_filled(self):
         for i, row in enumerate(self.field):
@@ -175,22 +164,40 @@ class tapa_field:
         return False
 
 
-if __name__ == "__main__":
-    field_file = "trivial3x3.txt"
-    solve_file = "trivial3x3_sol.txt"
-    wrong_file = "trivial3x3_wrong.txt"
+def parse_field(field_str: str):
+    field = []
+    for line in field_str.split("\n")[:-1]:
+        row = []
+        for nums in line.split(","):
+            row.append([int(num) for num in nums])
+        field.append(row)
 
-    field_file = "simple6x6.txt"
-    solve_file = "simple6x6_sol.txt"
-    wrong_file = "simple6x6_wrong.txt"
+    return field
+
+
+def parse_solution(solution_str: str):
+    lines = solution_str.split("\n")[:-1]
+    n_rows = len(lines)
+    n_cols = len(lines[0])
+    solution = np.empty((n_rows, n_cols), dtype=np.bool)
+    for i, row in enumerate(lines):
+        for j, char in enumerate(row):
+            solution[i, j] = (char == '1')
+    return solution
+
+
+if __name__ == "__main__":
+    field_file = "trivial2x3.txt"
+    solve_file = "trivial2x3_sol.txt"
+    wrong_file = "trivial2x3_wrong.txt"
 
     with open(field_file, "rt") as fp:
-        raw_field = fp.read()
+        raw_field = parse_field(fp.read())
     field = tapa_field(raw_field)
     with open(solve_file, "rt") as fp:
-        solution = tapa_field(raw_field, fp.read())
+        solution = tapa_field(raw_field, parse_solution(fp.read()))
     with open(wrong_file, "rt") as fp:
-        wrong = tapa_field(raw_field, fp.read())
+        wrong = tapa_field(raw_field, parse_solution(fp.read()))
 
     print(field)
     print(solution)
