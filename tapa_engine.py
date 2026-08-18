@@ -50,6 +50,28 @@ class tapa_field:
 
         return field_str
 
+    def brute_solution(self, progress: int = 100_000, find_all: bool = False):
+        solutions = []
+        n_cells = self.n_rows*self.n_cols
+        n_guesses = 2**n_cells
+        for i in range(n_guesses):
+            if i % progress == 0:
+                print(f"trying solution {i}/{n_guesses} ({100*i/n_guesses:.5f} %) ...")
+            guess = np.array(list(np.binary_repr(i, n_cells)), dtype=np.uint8)
+            guess = np.reshape(guess, (self.n_rows, self.n_cols))
+            self.solution = guess
+            if self.check_solution():
+                solutions.append(guess)
+                if not find_all:
+                    return solutions
+
+        if solutions:
+            self.solution = solutions[0]
+        else:
+            self.solution = None
+
+        return solutions
+
     def check_solution(self):
         if (
                 self.solution is None or
@@ -96,6 +118,8 @@ class tapa_field:
         return check_field.any()
 
     def check_uncontiguous(self):
+        if np.sum(self.solution) == 0:
+            return False
         # flood-fill with a dfs
         padded_field = np.zeros((self.n_rows+2, self.n_cols+2), dtype=np.bool)
         padded_field[1:-1, 1:-1] = self.solution
@@ -208,3 +232,12 @@ if __name__ == "__main__":
     print(solution.check_solution_and_print_reason())
     print()
     print(wrong.check_solution_and_print_reason())
+
+    print()
+    solutions = field.brute_solution(find_all=True)
+    print(field)
+    print(field.check_solution_and_print_reason())
+    print("All solutions:")
+    for solution in solutions:
+        print(solution)
+        print()
